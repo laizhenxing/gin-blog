@@ -2,9 +2,12 @@ package models
 
 import (
 	"fmt"
-	"gin-blog/pkg/setting"
-	"github.com/jinzhu/gorm"
 	"log"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mssql"
+
+	"gin-blog/pkg/setting"
 )
 
 var db *gorm.DB
@@ -49,7 +52,7 @@ func init() {
 
 	db.SingularTable(true)
 	db.DB().SetMaxIdleConns(10)
-	db.DB().SexMaxOpenConns(100)
+	db.DB().SetMaxOpenConns(100)
 }
 
 func CloseDB() {
