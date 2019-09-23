@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter() *gin.Engine  {
+func InitRouter() *gin.Engine {
 	r := gin.New()
 
 	// 使用 Logger 中间件
