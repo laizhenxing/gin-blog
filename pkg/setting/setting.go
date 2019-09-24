@@ -1,6 +1,7 @@
 package setting
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -21,18 +22,26 @@ var (
 )
 
 func init() {
+	// 打印运行顺序输出
+	fmt.Println("exec setting init func")
+
 	var err error
+	// 使用 ini 包加载文件内容
 	Cfg, err = ini.Load("conf/app.ini")
 	if err != nil {
 		log.Fatalf("Fail to parse 'conf/app.ini': %v", err)
 	}
 
+	// 初始化运行模式
 	LoadBase()
+	// 初始化 Server（HTTP 服务信息 -- [run_mode,http_port,read_timeout,write_timeout]）
 	LoadServer()
+	// 初始化 App（应用信息 -- [jwt_secret,page_size]）
 	LoadApp()
 }
 
 func LoadBase() {
+	// 使用 ini 包读取配置信息
 	RunMode = Cfg.Section("").Key("RUN_MODE").MustString("debug")
 }
 

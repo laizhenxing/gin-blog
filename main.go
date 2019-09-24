@@ -9,6 +9,7 @@ import (
 )
 
 func main()  {
+	fmt.Println("exec main func")
 
 	router := routers.InitRouter()
 
