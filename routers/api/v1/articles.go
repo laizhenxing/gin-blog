@@ -34,30 +34,30 @@ func GetArticles(c *gin.Context) {
 		maps["tag_id"] = tagId
 
 		valid.Min(tagId, 1, "tag_id").Message("标签ID必须大于0")
-
-		code := e.INVALID_PARAMS
-		if !valid.HasErrors() {
-			code = e.SUCCESS
-
-			data["lists"] = models.GetArticles(util.GetPage(c), setting.PageSize, maps)
-			data["total"] = models.GetArticleTotal(maps)
-		} else {
-			for _, err := range valid.Errors {
-				log.Printf("err.key: %s, err.message: %s", err.Key, err.Message)
-			}
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"code": code,
-			"msg":  e.GetMsg(code),
-			"data": data,
-		})
 	}
+
+	code := e.INVALID_PARAMS
+	if !valid.HasErrors() {
+		code = e.SUCCESS
+
+		data["lists"] = models.GetArticles(util.GetPage(c), setting.PageSize, maps)
+		data["total"] = models.GetArticleTotal(maps)
+	} else {
+		for _, err := range valid.Errors {
+			log.Printf("err.key: %s, err.message: %s", err.Key, err.Message)
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": code,
+		"msg":  e.GetMsg(code),
+		"data": data,
+	})
 }
 
 // 获取一篇文章
 func GetArticle(c *gin.Context) {
-	id := com.StrTo(c.Query("id")).MustInt()
+	id := com.StrTo(c.Param("id")).MustInt()
 
 	valid := validation.Validation{}
 	valid.Min(id, 1, "id").Message("ID必须大于0")
@@ -135,7 +135,7 @@ func AddArticle(c *gin.Context) {
 func EditArticle(c *gin.Context) {
 	valid := validation.Validation{}
 
-	id := com.StrTo(c.Query("id")).MustInt()
+	id := com.StrTo(c.Param("id")).MustInt()
 	tagId := com.StrTo(c.PostForm("tag_id")).MustInt()
 	title := c.PostForm("title")
 	desc := c.PostForm("desc")
@@ -153,7 +153,7 @@ func EditArticle(c *gin.Context) {
 	valid.MaxSize(desc, 255, "desc").Message("简述最长为255字符")
 	valid.MaxSize(content, 65535, "content").Message("内容最长为63535字符")
 	valid.Required(modifiedBy, "modified_by").Message("修改人不能为空")
-	valid.Max(modifiedBy, 100, "modified_by").Message("修改人最长为100字符")
+	valid.MaxSize(modifiedBy, 100, "modified_by").Message("修改人最长为100字符")
 
 	code := e.INVALID_PARAMS
 	if ! valid.HasErrors() {
@@ -188,7 +188,7 @@ func EditArticle(c *gin.Context) {
 			log.Printf("err.key: %s, err.message: %s", err.Key, err.Message)
 		}
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"code": code,
 		"msg":  e.GetMsg(code),
@@ -198,7 +198,7 @@ func EditArticle(c *gin.Context) {
 
 // 删除文章
 func DeleteArticle(c *gin.Context) {
-	id := com.StrTo(c.Query("id")).MustInt()
+	id := com.StrTo(c.Param("id")).MustInt()
 
 	code := e.INVALID_PARAMS
 	// 创建验证类
