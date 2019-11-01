@@ -3,6 +3,9 @@ package routers
 import (
 	"gin-blog/pkg/setting"
 	"github.com/gin-gonic/gin"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
+	_ "github.com/swaggo/swag/example/basic/docs"
 
 	"gin-blog/routers/api/v1"
 )
@@ -19,6 +22,7 @@ func InitRouter() *gin.Engine {
 	// 设置运行模式
 	gin.SetMode(setting.RunMode)
 
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// 注册路由
 	// gin.Context（核心） 是 gin 中的上下文，
 	apiv1 := r.Group("/api/v1")
