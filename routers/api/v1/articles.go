@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/astaxie/beego/validation"
@@ -10,11 +9,18 @@ import (
 
 	"gin-blog/models"
 	"gin-blog/pkg/e"
+	"gin-blog/pkg/logging"
 	"gin-blog/pkg/setting"
 	"gin-blog/pkg/util"
 )
 
-// 获取所有文章
+// @Summary 获取多篇文章
+// @Produce json
+// @Param tag_id body int false "TagID"
+// @Param state body int false "State"
+// @Param created_by body int false "CreateBy"
+// @Success 200 {Object} string "{"code":200,"data":{},"msg":"ok"}"
+// @Router /api/v1/articles [get]
 func GetArticles(c *gin.Context) {
 	data := make(map[string]interface{})
 	maps := make(map[string]interface{})
@@ -44,7 +50,7 @@ func GetArticles(c *gin.Context) {
 		data["total"] = models.GetArticleTotal(maps)
 	} else {
 		for _, err := range valid.Errors {
-			log.Printf("err.key: %s, err.message: %s", err.Key, err.Message)
+			logging.Info(err.Key, err.Message)
 		}
 	}
 
@@ -55,7 +61,11 @@ func GetArticles(c *gin.Context) {
 	})
 }
 
-// 获取一篇文章
+// @Summary 获取一篇文章
+// @Produce json
+// @Param id path int true "ID"
+// @Success 200 {Object} string "{"code":200,"data":{},"msg":"ok"}"
+// @Router /api/v1/articles/{id} [get]
 func GetArticle(c *gin.Context) {
 	id := com.StrTo(c.Param("id")).MustInt()
 
@@ -74,7 +84,7 @@ func GetArticle(c *gin.Context) {
 	} else {
 		// 输出参数验证错误信息
 		for _, err := range valid.Errors {
-			log.Printf("err.key: %s, err.message: %s", err.Key, err.Message)
+			logging.Info(err.Key, err.Message)
 		}
 	}
 
@@ -85,7 +95,17 @@ func GetArticle(c *gin.Context) {
 	})
 }
 
-// 新增文章
+// @Summary 新增文章
+// @Produce json
+// @Param tag_id query int true "TagID"
+// @Param title query string true "Title"
+// @Param desc query string true "Desc"
+// @Param content query string true "Content"
+// @Param created_by query string true "CreatedBy"
+// @Param state query int true "State"
+// @Success 200 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Failure 500 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Router /api/v1/articles [post]
 func AddArticle(c *gin.Context) {
 	tagId := com.StrTo(c.PostForm("tag_id")).MustInt()
 	title := c.PostForm("title")
@@ -120,7 +140,7 @@ func AddArticle(c *gin.Context) {
 		}
 	} else {
 		for _, err := range valid.Errors {
-			log.Printf("err.key: %s, err.message: %s", err.Key, err.Message)
+			logging.Info(err.Key, err.Message)
 		}
 	}
 
@@ -131,7 +151,17 @@ func AddArticle(c *gin.Context) {
 	})
 }
 
-// 修改文章
+// @Summary 修改文章
+// @Produce json
+// @Param id path int true "ID"
+// @Param tag_id query int true "TagID"
+// @Param title query string false "Title"
+// @Param desc query string false "Desc"
+// @Param content query string false "Content"
+// @Param modifiedBy query string false "ModifiedBy"
+// @Success 200 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Failure 500 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Router /api/v1/articles/{id} [put]
 func EditArticle(c *gin.Context) {
 	valid := validation.Validation{}
 
@@ -185,7 +215,7 @@ func EditArticle(c *gin.Context) {
 		}
 	} else {
 		for _, err := range valid.Errors {
-			log.Printf("err.key: %s, err.message: %s", err.Key, err.Message)
+			logging.Info(err.Key, err.Message)
 		}
 	}
 
@@ -196,7 +226,12 @@ func EditArticle(c *gin.Context) {
 	})
 }
 
-// 删除文章
+// @Summary 删除文章
+// @Produce json
+// @Param id path int true "ID"
+// @Success 200 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Failure 500 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Router /api/v1/articles/{id} [delete]
 func DeleteArticle(c *gin.Context) {
 	id := com.StrTo(c.Param("id")).MustInt()
 

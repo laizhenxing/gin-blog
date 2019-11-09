@@ -1,16 +1,20 @@
 package routers
 
 import (
-	"gin-blog/pkg/setting"
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
-	_ "github.com/swaggo/swag/example/basic/docs"
+	swaggerFiles "github.com/swaggo/gin-swagger/swaggerFiles"
+	//_ "github.com/swaggo/swag/example/basic/docs"
+	_ "gin-blog/docs"
 
+	"gin-blog/middleware/jwt"
+	"gin-blog/pkg/setting"
+	"gin-blog/routers/api"
 	"gin-blog/routers/api/v1"
 )
 
 func InitRouter() *gin.Engine {
+
 	r := gin.New()
 
 	// 使用 Logger 中间件
@@ -23,9 +27,14 @@ func InitRouter() *gin.Engine {
 	gin.SetMode(setting.RunMode)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	r.GET("/auth", api.GetAuth)
+
 	// 注册路由
 	// gin.Context（核心） 是 gin 中的上下文，
 	apiv1 := r.Group("/api/v1")
+	// 使用 jwt 中间件
+	apiv1.Use(jwt.JWT())
 	{
 		// 获取标签列表页
 		apiv1.GET("/tags", v1.GetTags)

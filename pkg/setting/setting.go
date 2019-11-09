@@ -2,9 +2,9 @@ package setting
 
 import (
 	"fmt"
-	"log"
 	"time"
 
+	"gin-blog/pkg/logging"
 	"github.com/go-ini/ini"
 )
 
@@ -29,7 +29,7 @@ func init() {
 	// 使用 ini 包加载文件内容
 	Cfg, err = ini.Load("conf/app.ini")
 	if err != nil {
-		log.Fatalf("Fail to parse 'conf/app.ini': %v", err)
+		logging.Fatal("Fail to parse 'conf/app.ini': %v", err)
 	}
 
 	// 初始化运行模式
@@ -48,7 +48,7 @@ func LoadBase() {
 func LoadServer() {
 	sec, err := Cfg.GetSection("server")
 	if err != nil {
-		log.Fatalf("Fail to get section 'server': %v", err)
+		logging.Fatal("Fail to get section 'server': %v", err)
 	}
 
 	RunMode = Cfg.Section("").Key("RUN_MODE").MustString("debug")
@@ -61,7 +61,7 @@ func LoadServer() {
 func LoadApp() {
 	sec, err := Cfg.GetSection("app")
 	if err != nil {
-		log.Fatalf("Fail to get section 'app': %v", err)
+		logging.Fatal("Fail to get section 'app': %v", err)
 	}
 
 	JwtSecret = sec.Key("JWT_SECRET").MustString("!@)*#)!@U#@*!@!)")

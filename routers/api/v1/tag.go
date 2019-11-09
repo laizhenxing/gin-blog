@@ -14,7 +14,13 @@ import (
 	"gin-blog/pkg/util"
 )
 
-// 获取多个文章标签
+// @Summary 获取多个文章标签
+// @Produce json
+// @Param name query string false "Name"
+// @Param state query int false "State"
+//  @Success 200 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Failure 500 {string} string  "{"code":200,"data":{},"msg":"ok"}"
+// @Router /api/v1/tags [get]
 func GetTags(c *gin.Context) {
 	// 获取请求url携带的参数（?name=test&state=1）
 	// DefaultQuery 可以设置一个默认值
@@ -52,7 +58,7 @@ func GetTags(c *gin.Context) {
 // @Param name query string true "Name"
 // @Param state query int false "State"
 // @Param created_by query int false "CreatedBy"
-// @Success 200 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Success 200 {string} string  "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/tags [post]
 func AddTag(c *gin.Context)  {
 	name := c.PostForm("name")
@@ -145,7 +151,12 @@ func EditTag(c *gin.Context)  {
 	})
 }
 
-// 删除文章标签
+// @Summary 删除文章标签
+// @Produce json
+// @Param id path int true "Id"
+// @Success 200 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Failure 500 {string} string "{"code":200,"data":{},"msg":"ok"}"
+// @Router /api/v1/tags/{id} [delete]
 func DeleteTag(c *gin.Context)  {
 	id := com.StrTo(c.Param("id")).MustInt()
 

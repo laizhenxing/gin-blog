@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"gin-blog/pkg/logging"
 	"gin-blog/pkg/setting"
 	"gin-blog/routers"
 	"github.com/fvbock/endless"
@@ -28,7 +29,7 @@ func main() {
 
 	go func() {
 		if err := s.ListenAndServe(); err != nil {
-			log.Printf("Listen: %s\n", err)
+			logging.Info("Listen: %s\n", err)
 		}
 	}()
 
@@ -41,10 +42,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	defer cancel()
 	if err := s.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown: ", err)
+		logging.Fatal("Server Shutdown: ", err)
 	}
 
-	log.Println("Server exiting!")
+	logging.Info("Server exiting!")
 }
 
 func mainEndless() {
@@ -58,13 +59,13 @@ func mainEndless() {
 	server := endless.NewServer(endPoint, routers.InitRouter())
 	//router := routers.InitRouter()
 	server.BeforeBegin = func(add string) {
-		log.Printf("Actual pid is %d", syscall.Getpid())
+		logging.Info("Actual pid is %d", syscall.Getpid())
 	}
 
 	// 启动服务
 	err := server.ListenAndServe()
 	if err != nil {
-		log.Printf("Server err: %v", err)
+		logging.Info("Server err: %v", err)
 	}
 	//s := &http.Server{
 	//	Addr:           fmt.Sprintf(":%d", setting.HTTPPort),
