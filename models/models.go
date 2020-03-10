@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	//_ "github.com/go-sql-driver/mysql"
