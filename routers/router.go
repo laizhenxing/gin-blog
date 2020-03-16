@@ -1,13 +1,13 @@
 package routers
 
 import (
+	"gin-blog/middleware/jwt"
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	swaggerFiles "github.com/swaggo/gin-swagger/swaggerFiles"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 	//_ "github.com/swaggo/swag/example/basic/docs"
 	_ "gin-blog/docs"
 
-	"gin-blog/middleware/jwt"
 	"gin-blog/pkg/setting"
 	"gin-blog/routers/api"
 	"gin-blog/routers/api/v1"

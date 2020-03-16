@@ -10,10 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/fvbock/endless"
+
 	"gin-blog/pkg/logging"
 	"gin-blog/pkg/setting"
 	"gin-blog/routers"
-	"github.com/fvbock/endless"
 )
 
 func main() {

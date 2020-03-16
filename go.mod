@@ -11,6 +11,7 @@ require (
 	github.com/go-ini/ini v1.47.0
 	github.com/jinzhu/gorm v1.9.10
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
+	github.com/robfig/cron v1.2.0 // indirect
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.5.1
 	github.com/unknwon/com v1.0.1
