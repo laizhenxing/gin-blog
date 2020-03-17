@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"gin-blog/models"
 	"log"
 	"net/http"
 	"os"
@@ -18,13 +19,17 @@ import (
 )
 
 func main() {
+	setting.SetUp()
+	models.SetUp()
+	logging.SetUp()
+
 	router := routers.InitRouter()
 
 	s := &http.Server{
-		Addr:           fmt.Sprintf(":%d", setting.HTTPPort),
+		Addr:           fmt.Sprintf(":%d", setting.ServerSetting.HttpPort),
 		Handler:        router,
-		ReadTimeout:    setting.ReadTimeout,
-		WriteTimeout:   setting.WriteTimeout,
+		ReadTimeout:    setting.ServerSetting.ReadTimeout,
+		WriteTimeout:   setting.ServerSetting.WriteTimeout,
 		MaxHeaderBytes: 1 << 20,
 	}
 
@@ -36,11 +41,11 @@ func main() {
 
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
-	<- quit
+	<-quit
 
 	log.Println("Shutdown Server ...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := s.Shutdown(ctx); err != nil {
 		logging.Fatal("Server Shutdown: ", err)
@@ -52,10 +57,10 @@ func main() {
 func mainEndless() {
 	fmt.Println("exec main func")
 
-	endless.DefaultReadTimeOut = setting.ReadTimeout
-	endless.DefaultWriteTimeOut = setting.WriteTimeout
+	endless.DefaultReadTimeOut = setting.ServerSetting.ReadTimeout
+	endless.DefaultWriteTimeOut = setting.ServerSetting.WriteTimeout
 	endless.DefaultMaxHeaderBytes = 1 << 20
-	endPoint := fmt.Sprintf(":%d", setting.HTTPPort)
+	endPoint := fmt.Sprintf(":%d", setting.ServerSetting.HttpPort)
 
 	server := endless.NewServer(endPoint, routers.InitRouter())
 	//router := routers.InitRouter()

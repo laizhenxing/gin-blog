@@ -43,12 +43,12 @@ func GetTags(c *gin.Context) {
 	// 使用定义好的错误码
 	code := e.SUCCESS
 
-	data["lists"] = models.GetTags(util.GetPage(c), setting.PageSize, maps)
+	data["lists"] = models.GetTags(util.GetPage(c), setting.AppSetting.PageSize, maps)
 	data["total"] = models.GetTagTotal(maps)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": code,
-		"msg": e.GetMsg(code),
+		"msg":  e.GetMsg(code),
 		"data": data,
 	})
 }
@@ -60,13 +60,13 @@ func GetTags(c *gin.Context) {
 // @Param created_by query int false "CreatedBy"
 // @Success 200 {string} string  "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/tags [post]
-func AddTag(c *gin.Context)  {
+func AddTag(c *gin.Context) {
 	name := c.PostForm("name")
 	// Query/DefaultQuery 获取的内容都是 string 类型
 	state := com.StrTo(c.DefaultPostForm("state", "0")).MustInt()
 	createdBy := c.PostForm("created_by")
 	fmt.Println(map[string]string{
-		"name": name,
+		"name":      name,
 		"createdBy": createdBy,
 	})
 	// 定义一个 validation struct
@@ -75,7 +75,7 @@ func AddTag(c *gin.Context)  {
 	valid.MaxSize(name, 100, "name").Message("名称最长为100字符")
 	valid.Required(createdBy, "created_by").Message("创建人不能为空")
 	valid.MaxSize(createdBy, 100, "created_by").Message("创建人最长为100字符")
-	valid.Range(state,0, 1, "state").Message("状态只允许0或1")
+	valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
 
 	// 声明参数错误码
 	code := e.INVALID_PARAMS
@@ -92,7 +92,7 @@ func AddTag(c *gin.Context)  {
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": code,
-		"msg": e.GetMsg(code),
+		"msg":  e.GetMsg(code),
 		"data": make(map[string]string),
 	})
 
@@ -106,7 +106,7 @@ func AddTag(c *gin.Context)  {
 // @Param modified_by query string true "ModifiedBy"
 // @Success 200 {string} string "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/tags/{id} [put]
-func EditTag(c *gin.Context)  {
+func EditTag(c *gin.Context) {
 	id := com.StrTo(c.Param("id")).MustInt()
 	name := c.Query("name")
 	modifiedBy := c.Query("modified_by")
@@ -118,12 +118,12 @@ func EditTag(c *gin.Context)  {
 		state = com.StrTo(arg).MustInt()
 		valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
 	}
-	
+
 	valid.Required(id, "id").Message("ID不能为空")
 	valid.Required(modifiedBy, "modified_by").Message("修改人不能为空")
 	valid.MaxSize(modifiedBy, 100, "modified_by").Message("修改人长度最大为100字符")
 	valid.MaxSize(name, 100, "name").Message("名称长度最长为100字符")
-	
+
 	code := e.INVALID_PARAMS
 	//fmt.Println(valid.Errors)
 	if !valid.HasErrors() {
@@ -146,7 +146,7 @@ func EditTag(c *gin.Context)  {
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": code,
-		"msg": e.GetMsg(code),
+		"msg":  e.GetMsg(code),
 		"data": make(map[string]string),
 	})
 }
@@ -157,7 +157,7 @@ func EditTag(c *gin.Context)  {
 // @Success 200 {string} string "{"code":200,"data":{},"msg":"ok"}"
 // @Failure 500 {string} string "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/tags/{id} [delete]
-func DeleteTag(c *gin.Context)  {
+func DeleteTag(c *gin.Context) {
 	id := com.StrTo(c.Param("id")).MustInt()
 
 	valid := validation.Validation{}
@@ -175,7 +175,7 @@ func DeleteTag(c *gin.Context)  {
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": code,
-		"msg": e.GetMsg(code),
+		"msg":  e.GetMsg(code),
 		"data": make(map[string]string),
 	})
 }

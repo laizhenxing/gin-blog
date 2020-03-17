@@ -6,7 +6,6 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	//_ "github.com/go-sql-driver/mysql"
 
 	"gin-blog/pkg/logging"
 	"gin-blog/pkg/setting"
@@ -18,14 +17,14 @@ type Model struct {
 	ID         int `gorm:"primary_key" json:"id"`
 	CreatedOn  int `json:"created_on"`
 	ModifiedOn int `json:"modified_on"`
-	DeletedOn  int  `json:"deleted_on"`
+	DeletedOn  int `json:"deleted_on"`
 }
 
-func init() {
-	fmt.Println("exec models init func")
+func SetUp() {
+	fmt.Println("exec models setup func")
 
 	var (
-		err         error
+		err error
 		dbType,
 		dbName,
 		user,
@@ -34,17 +33,13 @@ func init() {
 		tablePrefix string
 	)
 
-	sec, err := setting.Cfg.GetSection("database")
-	if err != nil {
-		logging.Fatal(2, "Fail to get section 'database': %v", err)
-	}
-
-	dbType = sec.Key("TYPE").String()
-	dbName = sec.Key("NAME").String()
-	user = sec.Key("USER").String()
-	password = sec.Key("PASSWORD").String()
-	host = sec.Key("host").String()
-	tablePrefix = sec.Key("TABLE_PREFIX").String()
+	dbSetting := setting.DatabaseSetting
+	dbType = dbSetting.Type
+	dbName = dbSetting.Name
+	user = dbSetting.User
+	password = dbSetting.Password
+	host = dbSetting.Host
+	tablePrefix = dbSetting.TablePrefix
 
 	db, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		user,

@@ -2,63 +2,48 @@ package logging
 
 import (
 	"fmt"
-	"log"
+	"gin-blog/pkg/file"
 	"os"
 	"time"
+
+	"gin-blog/pkg/setting"
 )
-
-var (
-	// 文件存储路径
-	LogSavePath  = "runtime/logs/"
-	// 文件名前缀
-	LogSaveName = "log"
-	// 文件名后缀
-	LogFileExt = "log"
-	// 日志格式化
-	TimeFormat = "20060102"
-)
-
-
-
 
 // 获取当前路径
-func GetLogFilePath() string {
-	return fmt.Sprintf("%s", LogSavePath)
+func getLogFilePath() string {
+	return fmt.Sprintf("%s%s", setting.AppSetting.RuntimeRootPath, setting.AppSetting.LogSavePath)
 }
 
-// 获取绝对路径
-func GetLogFileFullPath() string {
-	prefixPath := GetLogFilePath()
-	filename := fmt.Sprintf("%s%s.%s", LogSaveName, time.Now().Format(TimeFormat), LogFileExt)
-
-	return fmt.Sprintf("%s%s", prefixPath, filename)
+func getLogFileName() string {
+	return fmt.Sprintf("%s%s.%s",
+		setting.AppSetting.LogSaveName,
+		time.Now().Format(setting.AppSetting.TimeFormat),
+		setting.AppSetting.LogFileExt,
+	)
 }
 
 // 打开文件
-func OpenLogFile(filePath string) *os.File {
-	// 返回文件信息结构描述文件
-	_, err := os.Stat(filePath)
-	switch  {
-	case os.IsNotExist(err):
-		mkDir()
-	case os.IsPermission(err):
-		log.Fatalf("Permission: %v", err)
-	}
-
-	handle, err := os.OpenFile(filePath, os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+func openLogFile(fileName, filePath string) (*os.File, error) {
+	dir, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Fail to OpenFile: %v", err)
+		return nil, err
 	}
 
-	return handle
-}
+	src := dir + "/" + filePath
+	perm := file.CheckPermission(src)
+	if perm == true {
+		return nil, fmt.Errorf("file.CheckPermission Permission denied src: %s", src)
+	}
 
-// 创建文件夹
-func mkDir()  {
-	// 获取当前路径
-	dir, _ := os.Getwd()
-	err := os.MkdirAll(dir + "/" + GetLogFilePath(), os.ModePerm)
+	err = file.IsNotExistMkDir(src)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("file.IsNotExistMkDir src: %s, err: %v", src, err)
 	}
+
+	f, err := file.Open(src+fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("Fail to OpenFile :%v", err)
+	}
+
+	return f, nil
 }

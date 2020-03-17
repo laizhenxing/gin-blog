@@ -2,9 +2,12 @@ package routers
 
 import (
 	"gin-blog/middleware/jwt"
+	"gin-blog/pkg/upload"
 	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
+	"net/http"
+
 	//_ "github.com/swaggo/swag/example/basic/docs"
 	_ "gin-blog/docs"
 
@@ -24,11 +27,14 @@ func InitRouter() *gin.Engine {
 	// 使用 Recovery 中间件
 	r.Use(gin.Recovery())
 	// 设置运行模式
-	gin.SetMode(setting.RunMode)
+	gin.SetMode(setting.ServerSetting.RunMode)
+
+	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.GET("/auth", api.GetAuth)
+	r.POST("/upload", api.UploadImage)
 
 	// 注册路由
 	// gin.Context（核心） 是 gin 中的上下文，
