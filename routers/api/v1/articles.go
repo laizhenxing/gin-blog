@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gin-blog/pkg/app"
 	"net/http"
 
 	"github.com/astaxie/beego/validation"
@@ -67,32 +68,30 @@ func GetArticles(c *gin.Context) {
 // @Success 200 {Object} string "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/articles/{id} [get]
 func GetArticle(c *gin.Context) {
-	id := com.StrTo(c.Param("id")).MustInt()
+	appG := app.Gin{C: c}
 
+	id := com.StrTo(c.Param("id")).MustInt()
 	valid := validation.Validation{}
 	valid.Min(id, 1, "id").Message("ID必须大于0")
 
-	code := e.INVALID_PARAMS
-	var data interface{}
-	if !valid.HasErrors() {
-		if models.ExistArticleByID(id) {
-			data = models.GetArticle(id)
-			code = e.SUCCESS
-		} else {
-			code = e.ERROR_NOT_EXIST_ARTICLE
-		}
-	} else {
-		// 输出参数验证错误信息
-		for _, err := range valid.Errors {
-			logging.Info(err.Key, err.Message)
-		}
+	if valid.HasErrors() {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusOK, e.INVALID_PARAMS, nil)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  e.GetMsg(code),
-		"data": data,
-	})
+	//articleService := cache_service.Article{ID: id}
+	//exists, err := articleService.Exists
+
+	if !models.ExistArticleByID(id) {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_ARTICLE, nil)
+		return
+	} else {
+		article := models.GetArticle(id)
+		code := e.SUCCESS
+		appG.Response(http.StatusOK, code, article)
+	}
+
 }
 
 // @Summary 新增文章
@@ -107,6 +106,7 @@ func GetArticle(c *gin.Context) {
 // @Failure 500 {string} string "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/articles [post]
 func AddArticle(c *gin.Context) {
+	appG := app.Gin{C:c}
 	tagId := com.StrTo(c.PostForm("tag_id")).MustInt()
 	title := c.PostForm("title")
 	desc := c.PostForm("desc")
@@ -122,33 +122,29 @@ func AddArticle(c *gin.Context) {
 	valid.Required(createdBy, "created_by").Message("创建人不能为空")
 	valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
 
-	code := e.INVALID_PARAMS
-	if !valid.HasErrors() {
-		if models.ExistTagByID(tagId) {
-			data := make(map[string]interface{})
-			data["tag_id"] = tagId
-			data["title"] = title
-			data["desc"] = desc
-			data["content"] = content
-			data["created_by"] = createdBy
-			data["state"] = state
-
-			models.AddArticle(data)
-			code = e.SUCCESS
-		} else {
-			code = e.ERROR_NOT_EXIST_TAG
-		}
-	} else {
-		for _, err := range valid.Errors {
-			logging.Info(err.Key, err.Message)
-		}
+	if valid.HasErrors() {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusOK, e.INVALID_PARAMS, nil)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  e.GetMsg(code),
-		"data": make(map[string]interface{}),
-	})
+	exists := models.ExistTagByID(tagId)
+	if !exists {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_TAG, nil)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["tag_id"] = tagId
+	data["title"] = title
+	data["desc"] = desc
+	data["content"] = content
+	data["created_by"] = createdBy
+	data["state"] = state
+	models.AddArticle(data)
+
+	appG.ResponseSuccess()
+
 }
 
 // @Summary 修改文章
@@ -163,6 +159,7 @@ func AddArticle(c *gin.Context) {
 // @Failure 500 {string} string "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/articles/{id} [put]
 func EditArticle(c *gin.Context) {
+	appG := app.Gin{C:c}
 	valid := validation.Validation{}
 
 	id := com.StrTo(c.Param("id")).MustInt()
@@ -185,45 +182,45 @@ func EditArticle(c *gin.Context) {
 	valid.Required(modifiedBy, "modified_by").Message("修改人不能为空")
 	valid.MaxSize(modifiedBy, 100, "modified_by").Message("修改人最长为100字符")
 
-	code := e.INVALID_PARAMS
-	if !valid.HasErrors() {
-		if models.ExistArticleByID(id) {
-			if models.ExistTagByID(tagId) {
-				data := make(map[string]interface{})
-				if tagId > 0 {
-					data["tag_id"] = tagId
-				}
-				if title != "" {
-					data["title"] = title
-				}
-				if desc != "" {
-					data["desc"] = desc
-				}
-				if content != "" {
-					data["content"] = content
-				}
-
-				data["modified_by"] = modifiedBy
-
-				models.EditArticle(id, data)
-				code = e.SUCCESS
-			} else {
-				code = e.ERROR_NOT_EXIST_TAG
-			}
-		} else {
-			code = e.ERROR_NOT_EXIST_ARTICLE
-		}
-	} else {
-		for _, err := range valid.Errors {
-			logging.Info(err.Key, err.Message)
-		}
+	// 参数校验错误
+	if valid.HasErrors() {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusOK, e.INVALID_PARAMS, nil)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  e.GetMsg(code),
-		"data": make(map[string]string),
-	})
+	articleExists := models.ExistArticleByID(id)
+	// 文章不存在
+	if !articleExists {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_ARTICLE, nil)
+		return
+	}
+
+	tagExists := models.ExistTagByID(tagId)
+	// 类型不存在
+	if !tagExists {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_TAG, nil)
+		return
+	}
+
+	// 修改文章
+	data := make(map[string]interface{})
+	if tagId > 0 {
+		data["tag_id"] = tagId
+	}
+	if title != "" {
+		data["title"] = title
+	}
+	if desc != "" {
+		data["desc"] = desc
+	}
+	if content != "" {
+		data["content"] = content
+	}
+	data["modified_by"] = modifiedBy
+	models.EditArticle(id, data)
+
+	appG.ResponseSuccess()
 }
 
 // @Summary 删除文章
@@ -233,26 +230,28 @@ func EditArticle(c *gin.Context) {
 // @Failure 500 {string} string "{"code":200,"data":{},"msg":"ok"}"
 // @Router /api/v1/articles/{id} [delete]
 func DeleteArticle(c *gin.Context) {
-	id := com.StrTo(c.Param("id")).MustInt()
+	appG := app.Gin{C:c}
 
-	code := e.INVALID_PARAMS
+	id := com.StrTo(c.Param("id")).MustInt()
 	// 创建验证类
 	valid := validation.Validation{}
 	valid.Min(id, 1, "id").Message("ID必须大于0")
 
-	if !valid.HasErrors() {
-		// 判断模型是否存在，如果存在就删除，否则标记没找到
-		if models.ExistArticleByID(id) {
-			models.DeleteArticle(id)
-			code = e.SUCCESS
-		} else {
-			code = e.ERROR_NOT_EXIST_ARTICLE
-		}
+	//code := e.INVALID_PARAMS
+	if valid.HasErrors() {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusOK, e.INVALID_PARAMS, nil)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  e.GetMsg(code),
-		"data": make(map[string]string),
-	})
+	// 判断模型是否存在，如果存在就删除，否则标记没找到
+	exists := models.ExistArticleByID(id)
+	if ! exists {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_ARTICLE, nil)
+		return
+	}
+
+	models.DeleteArticle(id)
+
+	appG.ResponseSuccess()
 }

@@ -45,6 +45,16 @@ type Databases struct {
 
 var DatabaseSetting = &Databases{}
 
+type Redis struct {
+	Host        string
+	Password    string
+	MaxIdle     int
+	MaxActive   int
+	IdleTimeout time.Duration
+}
+
+var RedisSetting = &Redis{}
+
 func SetUp() {
 	// 使用 ini 包加载文件内容
 	Cfg, err := ini.Load("conf/app.ini")
@@ -71,6 +81,11 @@ func SetUp() {
 	err = Cfg.Section("database").MapTo(DatabaseSetting)
 	if err != nil {
 		mapToErr("DatabaseSetting", err)
+	}
+
+	err = Cfg.Section("redis").MapTo(RedisSetting)
+	if err != nil {
+		mapToErr("RedisSetting", err)
 	}
 }
 
